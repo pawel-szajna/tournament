@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import sys
+
+players={}
+
+def new_player():
+	return 1200
+
+def calc_elo_change(player_elo, opponent_elo, score):
+	K = 40 # max rating change in one match
+	expected_score = 1 / (1 + pow(10, (opponent_elo - player_elo) / 400))
+	return K * (score - expected_score)
+
+for line in sys.stdin:
+	(white, black, result) = line.strip().split(';')
+	if not white in players:
+		players[white] = new_player()
+	if not black in players:
+		players[black] = new_player()
+	white_score = 0
+	if result == "1-0":
+		white_score = 1
+	elif result == "1/2-1/2":
+		white_score = 0.5
+	black_score = 1 - white_score
+
+	white_elo = players[white]
+	black_elo = players[black]
+
+	white_diff = calc_elo_change(white_elo, black_elo, white_score)
+	black_diff = calc_elo_change(black_elo, white_elo, black_score)
+
+	print("# {} ({}) vs {} ({}): {}, w: {} b: {}".format(white, round(white_elo), black, round(black_elo), result, round(white_diff), round(black_diff)))
+
+	players[white] = white_elo + white_diff
+	players[black] = black_elo + black_diff
+
+for player, elo in dict(sorted(players.items(), key=lambda item: item[1])).items():
+	print(player, round(elo))

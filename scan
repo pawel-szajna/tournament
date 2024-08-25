@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+INPUT=tournament.pgn
+
+function get_field()
+{
+	FIELD=$1
+	shift
+	echo "$@" | grep ${FIELD} | sed 's/[^"]*"//' | sed 's/".*//'
+}
+
+GAMES=$(awk '/Event/ {print FNR}' ${INPUT})
+
+for GAME in ${GAMES}; do
+	GAME_INFO=$(tail -n+${GAME} ${INPUT} | head -n 8)
+	WHITE=$(get_field White "${GAME_INFO}")
+	BLACK=$(get_field Black "${GAME_INFO}")
+	RESULT=$(get_field Result "${GAME_INFO}")
+	echo "${WHITE};${BLACK};${RESULT}"
+done
